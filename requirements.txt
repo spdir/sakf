@@ -1,0 +1,9 @@
+tornado==5.1
+pymysql==0.9.2
+sqlalchemy==1.2.10
+pillow==5.2.0
+pycryptodome==3.6.6
+jdb2
+pycryptodomex
+paramiko==2.4.1
+ansible==2.6.4
