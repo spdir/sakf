@@ -1,5 +1,5 @@
 var mods = [
-  'element', 'sidebar', 'mockjs', 'select',
+  'element', 'sidebar', 'select', 'table',
   'tabs', 'menu', 'route', 'utils', 'component', 'kit'
 ];
 
@@ -13,6 +13,7 @@ layui.define(mods, function (exports) {
       layer = layui.layer,
       menu = layui.menu,
       component = layui.component,
+      table = layui.table,
       kit = layui.kit;
 
 
@@ -102,7 +103,7 @@ layui.define(mods, function (exports) {
     });
 
     // 注入mock
-    layui.mockjs.inject(APIs);
+    //layui.mockjs.inject(APIs);
 
     // 初始化渲染
     if (config.loadType === 'SPA') {

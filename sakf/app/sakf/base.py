@@ -16,10 +16,8 @@ def auth_url(method):
     try:
       _session_obj = self.session['url']
       _url_path = self.request.path
-      print('old-->', _url_path, len(_url_path))
       _url_path = _url_path[0:-1] if len(_url_path) > 1 \
                                      and _url_path.endswith('/') else _url_path
-      print('acc-->>', _url_path)
       if _url_path not in _session_obj:
         self.write("<script>alert('权限不允许')</script>")
         return self.write_error(403)
@@ -56,3 +54,6 @@ class BaseHandlers(tornado.web.RequestHandler):
       return self.render('sakf/error.html', msg=":>403 抱歉，您无权访问该页面.")
     else:
       return self.render('sakf/error.html', msg=":>500 抱歉，服务器出错了.")
+
+  def on_finish(self):
+    self.sql_engine.close()

@@ -1,6 +1,6 @@
 {% extends '../sakf/model.html' %}
 {% block body %}
-<body style="margin: 15px 8px 0 8px;">
+<body style="margin-top: 15px">
 <div class="layui-fluid">
     <div class="layui-row">
         <div class="layui-col-xs12">
@@ -8,7 +8,7 @@
                 <div class="layui-card-header">权限管理 / 链接管理</div>
                 <div class="layui-card-body">
                     <div class="layui-card-header">
-                        <a href="#/member/all/edit" class="layui-btn layui-btn-xs">
+                        <a href="javascript:;" class="layui-btn layui-btn-xs" id="add_hash">
                             <i class="layui-icon">&#xe654;</i>
                             <span>新增</span>
                         </a>
@@ -17,10 +17,9 @@
                         </a>
                     </div>
                     <div class="layui-card-body">
-                        <table id="demo_hash" lay-filter="test"></table>
-                        <script type="text/html" id="barDemo_hash">
-                            <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
-                            <!-- <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a> -->
+                        <table id="url_hash" lay-filter="url_table"></table>
+                        <script type="text/html" id="barUrl_hash">
+                            <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
                             <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
                         </script>
                     </div>
@@ -30,96 +29,124 @@
     </div>
 </div>
 
+<!-- search -->
+<script type="text/html" id="search_tpl_hash">
+
+</script>
+
+<!-- add -->
+<script type="text/html" id="add_tpl_hash">
+
+</script>
+
 <script>
   layui.config({
     base: '{{ static_url("js/") }}'
-  }).use(['jquery', 'mockjs', 'table', 'sidebar', 'form'], function () {
+  }).use(['jquery', 'table', 'layer', 'sidebar', 'form'], function () {
     var $ = layui.jquery,
         layer = layui.layer,
         table = layui.table,
         sidebar = layui.sidebar,
         form = layui.form;
-    // 注入mock
-    layui.mockjs.inject({
-      'POST /demo/table/user': {
-        code: 0,
-        msg: "xxx",
-        count: 1000,
-        'data|20': [{
-          'id|+1': 1,
-          username: '@name',
-          sex: '@boolean',
-          city: '@city',
-          sign: '@csentence',
-          experience: '@integer',
-          score: '@integer',
-          classify: '@word',
-          wealth: '@integer',
-          auth: '@boolean'
-        }]
-      }
-    });
-    //第一个实例
+
+    //表格容器
     table.render({
       method: 'post',
       // size: 'sm',
       limit: 20,
-      elem: '#demo_hash',
-      height: 'full-235',
-      url: '/demo/table/user', //数据接口
+      elem: '#url_hash',
+      //height: "full-320",
+      loading: true,
+      //defaultToolbar: ['filter', 'print', 'exports'],
+      url: '/auth/url/query', //数据接口
       page: true, //开启分页
       cols: [
         [ //表头
           {
             field: 'id',
             title: 'ID',
-            width: 80,
+            width: 100,
             sort: true,
-            fixed: 'left'
+            fixed: 'left',
           }, {
-          field: 'username',
-          title: '用户名',
-          width: 80
+          field: 'uid',
+          title: 'UID',
+          hide: true
         }, {
-          field: 'sex',
-          title: '性别',
-          width: 80,
-          sort: true
+          field: 'name',
+          title: '名称',
+          sort: true,
+          edit: 'text',
+          width: 300
         }, {
-          field: 'city',
-          title: '城市',
-          width: 80
-        }, {
-          field: 'sign',
-          title: '签名',
-          width: 177
-        }, {
-          field: 'experience',
-          title: '积分',
-          width: 80,
-          sort: true
-        }, {
-          field: 'score',
-          title: '评分',
-          width: 80,
-          sort: true
-        }, {
-          field: 'classify',
-          title: '职业',
-          width: 80
-        }, {
-          field: 'wealth',
-          title: '财富',
-          width: 135,
-          sort: true
+          field: 'url',
+          title: '链接地址',
+          sort: true,
+          edit: 'text',
+          width: 460
         }, {
           fixed: 'right',
-          width: 180,
+          //width: 180,
           align: 'center',
-          toolbar: '#barDemo_hash'
+          toolbar: '#barUrl_hash'
         }
         ]
       ]
+    });
+    // table edit
+    table.on('edit(url_table)', function (obj) {
+      var modify_data = obj.data;
+      console.log(modify_data)
+      $.ajax({
+        type: 'post',
+        url: '/auth/url/modify',
+        data: {'info': JSON.stringify(modify_data)}
+      });
+    });
+
+    // tools event
+    table.on('tool(url_table)', function (obj) {
+      var data = obj.data;
+      var layEvent = obj.event;
+      var tr = obj.tr;
+      //事件开始
+      if (layEvent === 'del') { //删除
+        layer.confirm('确认是否删除', function (index) {
+          obj.del();
+          layer.close(index);
+          //向服务端发送删除指令
+          $.ajax({
+            type: 'post',
+            url: '/auth/url/del',
+            data: {'info': JSON.stringify(data)}
+          });
+        });
+      }
+    });
+    // search
+    $("#search_hash").click(function () {
+      layer.open({
+        type: 2,
+        title: '搜索',
+        area: ['390px', '260px'],
+        shade: 0.1,
+        shadeClose: true,
+        maxmin: true,
+        content: $("#search_tpl_hash").html()
+      });
+    });
+
+    // add
+    $("#add_hash").click(function () {
+      layer.open({
+        type: 2,
+        title: '添加链接',
+        area: ['390px', '260px'],
+        shade: 0.1,
+        shadeClose: true,
+        maxmin: true,
+        content: $("#add_tpl_hash").html()
+      });
     });
   });
 </script>
