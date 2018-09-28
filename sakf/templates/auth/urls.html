@@ -29,14 +29,69 @@
     </div>
 </div>
 
+<style>
+    .layer_1 {
+        margin: 10px;
+    }
+</style>
+
 <!-- search -->
 <script type="text/html" id="search_tpl_hash">
-
+    <div class="layer_1">
+        <form class="layui-form layui-form-pane" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">Name</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required placeholder="要搜索的URL别名"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">URL</label>
+                <div class="layui-input-block">
+                    <input type="text" name="url" required placeholder="要搜索的URL"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="urlSearch">搜索</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </script>
 
 <!-- add -->
 <script type="text/html" id="add_tpl_hash">
-
+    <div class="layer_1">
+        <form class="layui-form layui-form-pane" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">Name</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required lay-verify="required" placeholder="请输入URL别名"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">URL</label>
+                <div class="layui-input-block">
+                    <input type="text" name="url" required lay-verify="required" placeholder="请输URL" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="urlAdd">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </script>
 
 <script>
@@ -126,27 +181,97 @@
     // search
     $("#search_hash").click(function () {
       layer.open({
-        type: 2,
+        type: 1,
         title: '搜索',
-        area: ['390px', '260px'],
+        area: ['390px', '230px'],
         shade: 0.1,
         shadeClose: true,
+        resize: false,
         maxmin: true,
         content: $("#search_tpl_hash").html()
       });
+    });
+    form.on('submit(urlSearch)', function (data) {
+      var form_data = data.field;
+      var name = form_data.name;
+      var url = form_data.url;
+      // 搜索表格容器
+      table.render({
+        method: 'post',
+        limit: 20,
+        elem: '#url_hash',
+        loading: true,
+        url: '/auth/url/query', //数据接口
+        where: {name: name, url: url},
+        page: true, //开启分页
+        cols: [
+          [ //表头
+            {
+              field: 'id',
+              title: 'ID',
+              width: 100,
+              sort: true,
+              fixed: 'left',
+            }, {
+            field: 'uid',
+            title: 'UID',
+            hide: true
+          }, {
+            field: 'name',
+            title: '名称',
+            sort: true,
+            edit: 'text',
+            width: 300
+          }, {
+            field: 'url',
+            title: '链接地址',
+            sort: true,
+            edit: 'text',
+            width: 460
+          }, {
+            fixed: 'right',
+            align: 'center',
+            toolbar: '#barUrl_hash'
+          }
+          ]
+        ]
+      });
+      return false;
     });
 
     // add
     $("#add_hash").click(function () {
       layer.open({
-        type: 2,
+        type: 1,
         title: '添加链接',
-        area: ['390px', '260px'],
+        area: ['390px', '230px'],
         shade: 0.1,
         shadeClose: true,
+        resize: false,
         maxmin: true,
         content: $("#add_tpl_hash").html()
       });
+    });
+    form.on('submit(urlAdd)', function (data) {
+      var form_data = data.field;
+      $.ajax({
+        type: 'post',
+        url: '/auth/url/add',
+        data: {'info': JSON.stringify(form_data)},
+        success: function (data) {
+          if (data.status == 1) {
+            layer.msg('添加成功', {icon: 1});
+          } else if (data.status == 2) {
+            layer.msg('已存在', {icon: 2});
+          } else {
+            layer.msg('添加失败', {icon: 2});
+          }
+        },
+        error: function () {
+          layer.msg('系统异常,请稍后重试!!!', {icon: 2});
+        }
+      })
+      return false;
     });
   });
 </script>
