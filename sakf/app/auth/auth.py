@@ -49,8 +49,12 @@ class LoginHandler(base.BaseHandlers):
                 db_user_info.password == md5_encryption.md5_string(password):
           self.session['is_login'] = True
           self.session['is_super'] = True if int(db_user_info.super) else False
-          self.session['url'] = self.get_user_url(db_user_info.id)
-          status_code['status'] = 1
+          try:
+            self.session['url'] = self.get_user_url(db_user_info.id)
+            status_code['status'] = 1
+          except AttributeError:
+            status_code['msg'] = '账号无任何权限'
+            del self.session[None]
         elif db_user_info.name == username:  # 账户登陆异常
           _lock_cookie = json.loads('{}' if not self.get_secure_cookie('_TLU_') else self.get_secure_cookie('_TLU_'))
           _now_user_lock = _lock_cookie.get(username, 1)
@@ -62,7 +66,7 @@ class LoginHandler(base.BaseHandlers):
           else:
             _lock_cookie[username] = int(_now_user_lock) + 1
             self.set_secure_cookie('_TLU_', json.dumps(_lock_cookie), expires=time.time() + 60 * 5)
-    except TimeoutError as e:
+    except TabError as e:
       logging.error(e)
     return self.write(status_code)
 

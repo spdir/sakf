@@ -1,4 +1,356 @@
 {% extends '../sakf/model.html' %}
 {% block body %}
+<body style="margin-top: 15px">
+<div class="layui-fluid">
+    <div class="layui-row">
+        <div class="layui-col-xs12">
+            <div class="layui-card">
+                <div class="layui-card-header">权限管理 / 用户管理</div>
+                <div class="layui-card-body">
+                    <div class="layui-card-header">
+                        <a href="javascript:;" class="layui-btn layui-btn-xs" id="add_hash">
+                            <i class="layui-icon">&#xe654;</i>
+                            <span>新增</span>
+                        </a>
+                        <a href="javascript:;" class="layui-btn layui-btn-xs layui-btn-primary" id="search_hash">
+                            <i class="layui-icon">&#xe615;</i>
+                        </a>
+                    </div>
+                    <div class="layui-card-body">
+                        <table id="user_hash" lay-filter="user_table"></table>
+                        <script type="text/html" id="barUser_hash">
+                            <a class="layui-btn layui-btn-xs  layui-btn-warm" lay-event="lock">锁定</a>
+                            <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<style>
+    .layer_1 {
+        margin: 20px 10px 40px 10px;
+    }
+</style>
+
+<!-- add -->
+<script type="text/html" id="add_tpl_hash">
+    <div class="layer_1">
+        <form class="layui-form-pane" action="" id="useraddForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">用户名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required lay-verify="required" placeholder="请输入用户名"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">密码</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="password" required lay-verify="required" placeholder="请输入密码"
+                           autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">注意安全性</div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">选择组</label>
+                <div class="layui-input-block">
+                    <select name="group" lay-verify="required" lay-search id="slc-g">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">是否启用</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="lock" lay-skin="switch" lay-text="启用|锁定" value="1" checked>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="userAdd">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<!-- search -->
+<script type="text/html" id="search_tpl_hash">
+    <div class="layer_1">
+        <form class="layui-form layui-form-pane" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">Name</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required placeholder="搜索URL别名"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="userSearch">搜索</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script>
+  layui.config({
+    base: '{{ static_url("js/") }}'
+  }).use(['jquery', 'table', 'layer', 'sidebar', 'form'], function () {
+    var $ = layui.jquery,
+        layer = layui.layer,
+        table = layui.table,
+        sidebar = layui.sidebar,
+        form = layui.form;
+
+    //表格容器
+    table.render({
+      method: 'post',
+      // size: 'sm',
+      limit: 20,
+      elem: '#user_hash',
+      //height: "full-320",
+      loading: true,
+      //defaultToolbar: ['filter', 'print', 'exports'],
+      url: '/auth/user/query', //数据接口
+      page: true, //开启分页
+      cols: [
+        [ //表头
+          {
+            field: 'id',
+            title: 'ID',
+            width: 80,
+            sort: true,
+            fixed: 'left',
+          }, {
+          field: 'uid',
+          title: 'UID',
+          hide: true
+        }, {
+          field: 'name',
+          title: '账户名',
+          sort: true,
+          width: 150
+        }, {
+          field: 'super',
+          title: '是否管理员',
+          sort: true,
+          width: 120
+        }, {
+          field: 'lock',
+          title: '是否锁定',
+          sort: true,
+          width: 120
+        }, {
+          field: 'ctime',
+          title: '创建时间',
+          sort: true,
+          width: 140
+        }, {
+          field: 'ltime',
+          title: '最后锁定时间',
+          sort: true,
+          width: 140
+        }, {
+          field: 'group',
+          title: '所在组',
+          sort: true,
+          width: 140
+        }, {
+          fixed: 'right',
+          //width: 180,
+          align: 'center',
+          toolbar: '#barUser_hash'
+        }
+        ]
+      ]
+    });
+
+    // tools event
+    table.on('tool(user_table)', function (obj) {
+      var data = obj.data;
+      var layEvent = obj.event;
+      var tr = obj.tr;
+      //事件开始
+      if (layEvent === 'del') { //删除
+        layer.confirm('确认是否删除', function (index) {
+          obj.del();
+          layer.close(index);
+          //向服务端发送删除指令
+          $.ajax({
+            type: 'post',
+            url: '/auth/user/del',
+            data: {'info': JSON.stringify(data)}
+          });
+        });
+      } else if (layEvent === 'lock') { //锁定账户
+        layer.confirm('确认是否锁定账户', function (index) {
+          layer.close(index);
+          //向服务端发送删除指令
+          var old_lock = data.lock;
+          $.ajax({
+            type: 'post',
+            url: '/auth/user/modify',
+            data: {
+              'info': JSON.stringify(data),
+              'tp': 'lock',
+              'lock': old_lock == "YES" ? 1 : 0,
+            },
+            success: function () {
+              obj.update({
+                lock: old_lock == "YES" ? "NO" : "YES",
+                ltime: NowTime()
+              });
+            }
+          });
+        });
+      }
+    });
+
+    // search
+    $("#search_hash").click(function () {
+      layer.open({
+        type: 1,
+        title: '搜索',
+        area: ['390px', '198px'],
+        shade: 0.1,
+        shadeClose: true,
+        resize: false,
+        maxmin: true,
+        content: $("#search_tpl_hash").html()
+      });
+    });
+    form.on('submit(userSearch)', function (data) {
+      var form_data = data.field;
+      var name = form_data.name;
+      // 搜索表格容器
+      table.render({
+        method: 'post',
+        limit: 20,
+        elem: '#user_hash',
+        loading: true,
+        url: '/auth/user/query', //数据接口
+        where: {username: name},
+        page: true, //开启分页
+        cols: [
+          [ //表头
+            {
+              field: 'id',
+              title: 'ID',
+              width: 80,
+              sort: true,
+              fixed: 'left',
+            }, {
+            field: 'uid',
+            title: 'UID',
+            hide: true
+          }, {
+            field: 'name',
+            title: '账户名',
+            sort: true,
+            width: 150
+          }, {
+            field: 'super',
+            title: '是否管理员',
+            sort: true,
+            width: 120
+          }, {
+            field: 'lock',
+            title: '是否锁定',
+            sort: true,
+            width: 120
+          }, {
+            field: 'ctime',
+            title: '创建时间',
+            sort: true,
+            width: 140
+          }, {
+            field: 'ltime',
+            title: '最后锁定时间',
+            sort: true,
+            width: 140
+          }, {
+            field: 'group',
+            title: '所在组',
+            sort: true,
+            width: 140
+          }, {
+            fixed: 'right',
+            //width: 180,
+            align: 'center',
+            toolbar: '#barUser_hash'
+          }
+          ]
+        ]
+      });
+      return false;
+    });
+
+    // add
+    $("#add_hash").click(function () {
+      function _get_group_data() {
+        $.ajax({
+          type: 'post',
+          url: '/auth/group/query',
+          success: function (data) {
+            var option_module = '<option value="{0}">{1}</option>'
+            var rows_data = data.data;
+            for (var row in rows_data) {
+              var option_html = option_module.format(rows_data[row].uid, rows_data[row].name)
+              $("#slc-g").append(option_html);
+            }
+            $("#useraddForm").addClass('layui-form');
+            $('#useraddForm')[0].reset();
+          }
+        });
+      }
+
+      _get_group_data()
+      layer.open({
+        type: 1,
+        title: '添加用户',
+        area: ['500px', '480px'],
+        shade: 0.1,
+        shadeClose: true,
+        //resize: false,
+        maxmin: true,
+        content: $("#add_tpl_hash").html()
+      });
+    });
+    form.on('submit(userAdd)', function (data) {
+      var form_data = data.field;
+      $.ajax({
+        type: 'post',
+        url: '/auth/user/add',
+        data: {'info': JSON.stringify(form_data)},
+        success: function (data) {
+          if (data.status == 1) {
+            layer.msg('添加成功', {icon: 1});
+          } else if (data.status == 2) {
+            layer.msg('已存在', {icon: 2});
+          } else {
+            layer.msg('添加失败', {icon: 2});
+          }
+        },
+        error: function () {
+          layer.msg('系统异常,请稍后重试!!!', {icon: 2});
+        }
+      })
+      return false;
+    });
+  });
+</script>
+
+<style scoped>
+
+</style>
+</body>
 {% end %}
