@@ -38,7 +38,6 @@ class UserHandler(base.BaseHandlers):
       _password = _form_info.get('password', None)
       _lock = _form_info.get('lock', 0)
       _group_id = _form_info.get('group', None)
-      print(_form_info)
       if _username and _password and _group_id:
         if not self.sql_engine.query(Auth.AuthUser).filter_by(name=_username).first():
           _obj = Auth.AuthUser(
@@ -80,6 +79,7 @@ class UserHandler(base.BaseHandlers):
     :param kwargs:
     :return:
     """
+    return_data = {'status': 0}
     _tp = self.get_argument('tp', None)
     _info = json.loads(self.get_argument('info', None))
     if _tp == 'lock':
@@ -90,7 +90,34 @@ class UserHandler(base.BaseHandlers):
         'ltime': self.now_time()
       })
       self.sql_engine.commit()
-    return ''
+    elif _tp == 'passwd':
+      _passwd = _info.get('passwd', None)
+      if _passwd:
+        self.sql_engine.query(Auth.AuthUser).filter_by(id=int(_info.get('uid'))).update({
+          'password': md5_string(md5_string(_passwd))
+        })
+        self.sql_engine.commit()
+        return_data['status'] = 1
+    elif _tp == 'name':
+      _name = _info.get('name', None)
+      if _name:
+        if not self.sql_engine.query(Auth.AuthUser).filter_by(name=_name).first():
+          self.sql_engine.query(Auth.AuthUser).filter_by(id=int(_info.get('uid'))).update({
+            'name': _name
+          })
+          self.sql_engine.commit()
+          return_data['status'] = 1
+    elif _tp == 'group':
+      _group_id = _info.get('group')
+      if _group_id:
+        if self.sql_engine.query(Auth.AuthGroup).filter_by(id=int(_group_id)).first():
+          self.sql_engine.query(Auth.AuthUser).filter_by(id=int(_info.get('uid'))).update({
+            'group_id': int(_group_id)
+          })
+          self.sql_engine.commit()
+          return_data['status'] = 1
+          return_data['group'] = self.sql_engine.query(Auth.AuthGroup).filter_by(id=int(_group_id)).first().name
+    return return_data
 
   def _query(self, *args, **kwargs):
     """

@@ -56,6 +56,10 @@ class UrlHandler(base.BaseHandlers):
           if self.sql_engine.query(Auth.AuthUrl).filter(
                   Auth.AuthUrl.name == _name and Auth.AuthUrl.url == _url).first():
             status = 1
+          try:
+            self.__admin_add_url(_name)
+          except TimeoutError:
+            pass
         else:
           status = 2
     except AttributeError:
@@ -133,3 +137,19 @@ class UrlHandler(base.BaseHandlers):
     return_data['data'] = _data
     return_data['code'] = 0
     return return_data
+
+  def __admin_add_url(self, url_name):
+    """
+    添加url后admin组自动添加url
+    :param url_name:
+    :return:
+    """
+    _url_id = self.sql_engine.query(Auth.AuthUrl).filter_by(name=url_name).first().id
+    _group_obj = self.sql_engine.query(Auth.AuthGroup).filter_by(id=1)
+    _old_route = _group_obj.first().url_route
+    _url_id_list = [i for i in _old_route.split(',') if i]
+    _url_id_list.append(str(_url_id))
+    _group_obj.update({
+      'url_route': ','.join(_url_id_list)
+    })
+    self.sql_engine.commit()

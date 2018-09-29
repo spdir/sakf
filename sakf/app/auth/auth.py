@@ -8,13 +8,13 @@ from sakf.db.model import Auth
 
 class LoginHandler(base.BaseHandlers):
 
-  def get_user_url(self, id):
+  def get_user_url(self, group_id):
     """
     获取用户的所有可访问的url
     :param username:
     :return:
     """
-    _query_data = self.sql_engine.query(Auth.AuthGroup).filter_by(id=id).first().url_route
+    _query_data = self.sql_engine.query(Auth.AuthGroup).filter_by(id=group_id).first().url_route
     _url_id_list = [int(i) for i in _query_data.split(',') if i]
     _url_query_data = self.sql_engine.query(Auth.AuthUrl).filter(Auth.AuthUrl.id.in_(_url_id_list)).all()
     url_list = [url_obj.url for url_obj in _url_query_data]
@@ -50,7 +50,7 @@ class LoginHandler(base.BaseHandlers):
           self.session['is_login'] = True
           self.session['is_super'] = True if int(db_user_info.super) else False
           try:
-            self.session['url'] = self.get_user_url(db_user_info.id)
+            self.session['url'] = self.get_user_url(db_user_info.group_id)
             status_code['status'] = 1
           except AttributeError:
             status_code['msg'] = '账号无任何权限'

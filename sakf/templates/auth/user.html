@@ -86,7 +86,7 @@
             <div class="layui-form-item">
                 <label class="layui-form-label">Name</label>
                 <div class="layui-input-block">
-                    <input type="text" name="name" required placeholder="搜索URL别名"
+                    <input type="text" name="name" required placeholder="搜索用户名"
                            autocomplete="off"
                            class="layui-input">
                 </div>
@@ -94,6 +94,51 @@
             <div class="layui-form-item">
                 <div class="layui-input-block">
                     <button class="layui-btn" lay-submit lay-filter="userSearch">搜索</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<!-- modify -->
+<script type="text/html" id="modify_tpl_hash">
+    <div class="layer_1">
+        <form class="layui-form layui-form-pane" action="" id="userModifyForm">
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">选择修改项</label>
+                <div class="layui-input-block" id="modify-tp">
+                    <input type="radio" name="tp" value="passwd" title="密码" checked>
+                    <input type="radio" name="tp" value="name" title="用户名">
+                    <input type="radio" name="tp" value="group" title="组">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">密码</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="passwd" placeholder="请输入密码"
+                           autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">注意安全性</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">用户名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" placeholder="请输入用户名"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">选择组</label>
+                <div class="layui-input-block">
+                    <select name="group" lay-search id="slc-ga">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="userEdit">立即提交</button>
                     <button type="reset" class="layui-btn layui-btn-primary">重置</button>
                 </div>
             </div>
@@ -176,7 +221,7 @@
 
     // tools event
     table.on('tool(user_table)', function (obj) {
-      var data = obj.data;
+      var edata = obj.data;
       var layEvent = obj.event;
       var tr = obj.tr;
       //事件开始
@@ -188,19 +233,19 @@
           $.ajax({
             type: 'post',
             url: '/auth/user/del',
-            data: {'info': JSON.stringify(data)}
+            data: {'info': JSON.stringify(edata)}
           });
         });
       } else if (layEvent === 'lock') { //锁定账户
         layer.confirm('确认是否锁定账户', function (index) {
           layer.close(index);
           //向服务端发送删除指令
-          var old_lock = data.lock;
+          var old_lock = edata.lock;
           $.ajax({
             type: 'post',
             url: '/auth/user/modify',
             data: {
-              'info': JSON.stringify(data),
+              'info': JSON.stringify(edata),
               'tp': 'lock',
               'lock': old_lock == "YES" ? 1 : 0,
             },
@@ -211,6 +256,83 @@
               });
             }
           });
+        });
+      } else if (layEvent === 'edit') { //编辑
+        function _get_group_data() {
+          $.ajax({
+            type: 'post',
+            url: '/auth/group/query',
+            success: function (data) {
+              var option_module = '<option value="{0}">{1}</option>'
+              var rows_data = data.data;
+              for (var row in rows_data) {
+                var option_html = option_module.format(rows_data[row].uid, rows_data[row].name)
+                $("#slc-ga").append(option_html);
+              }
+              $("#userModifyForm").addClass('layui-form');
+              $('#userModifyForm')[0].reset();
+            }
+          });
+        }
+
+        _get_group_data()
+        layer.open({
+          type: 1,
+          title: '修改',
+          area: ['500px', '480px'],
+          shade: 0.1,
+          shadeClose: true,
+          //resize: false,
+          maxmin: true,
+          content: $("#modify_tpl_hash").html()
+        });
+
+        form.on('submit(userEdit)', function (data) {
+          var form_data = data.field;
+          var tp = form_data.tp;
+          var uid = edata.uid;
+          var sub_data = {}
+          if (tp === 'passwd') {
+            sub_data = {'tp': tp, 'info': JSON.stringify({'uid': uid, 'passwd': form_data.passwd})}
+          } else if (tp === 'name') {
+            sub_data = {'tp': tp, 'info': JSON.stringify({'uid': uid, 'name': form_data.name})}
+          } else if (tp === 'group') {
+            sub_data = {'tp': tp, 'info': JSON.stringify({'uid': uid, 'group': form_data.group})}
+          }
+          console.log(sub_data)
+          $.ajax({
+            type: 'post',
+            url: '/auth/user/modify',
+            data: sub_data,
+            success: function (data) {
+              if (tp === 'passwd') {  //修改密码
+                if (data.status == 1) {
+                  layer.msg('修改成功', {icon: 1});
+                } else {
+                  layer.msg('修改失败', {icon: 2});
+                }
+              } else if (tp === 'name') { //修改信息
+                if (data.status == 1) {
+                  layer.msg('修改成功', {icon: 1});
+                  obj.update({
+                    name: form_data.name
+                  });
+                } else {
+                  layer.msg('修改失败', {icon: 2});
+                }
+              } else if (tp === 'group') {
+                if (data.status == 1) {
+                  layer.msg('修改成功', {icon: 1});
+                  obj.update({
+                    group: data.group
+                  });
+                } else {
+                  layer.msg('修改失败', {icon: 2});
+                }
+              }
+            }
+          });
+          return false;
         });
       }
     });
