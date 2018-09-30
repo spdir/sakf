@@ -120,10 +120,6 @@ class GroupHandler(base.BaseHandlers):
       _query_info = limitQuery(Auth.AuthGroup, int(_page), int(_limit), is_filter=True,
                                _filter=Auth.AuthGroup.name.like("%" + _name + "%"))
     elif _tp == 'url':  # 根据组id获取当前组的url权限
-      _group_id = self.get_argument('group_id', None)
-      _group_obj = self.sql_engine.query(Auth.AuthGroup).filter_by(id=int(_group_id))
-      _url_id_list = [int(i) for i in _group_obj.first().url_route.split(',') if i]
-      _all_url_obj = self.sql_engine.query(Auth.AuthUrl).filter(Auth.AuthUrl.id.in_(_url_id_list)).all()
       __url_data = []
       _tmp_return_data = {
         "code": 1,
@@ -131,16 +127,23 @@ class GroupHandler(base.BaseHandlers):
         "count": 1,
         "data": []
       }
-      for _n, _row in enumerate(_all_url_obj, 1):
-        _tmp_url_data = {
-          'id': _n,
-          'uid': _row.id,
-          'name': _row.name,
-          'url': _row.url
-        }
-        __url_data.append(_tmp_url_data)
-      _tmp_return_data['data'] = __url_data
-      _tmp_return_data['code'] = 0
+      try:
+        _group_id = self.get_argument('group_id', None)
+        _group_obj = self.sql_engine.query(Auth.AuthGroup).filter_by(id=int(_group_id))
+        _url_id_list = [int(i) for i in _group_obj.first().url_route.split(',') if i]
+        _all_url_obj = self.sql_engine.query(Auth.AuthUrl).filter(Auth.AuthUrl.id.in_(_url_id_list)).all()
+        for _n, _row in enumerate(_all_url_obj, 1):
+          _tmp_url_data = {
+            'id': _n,
+            'uid': _row.id,
+            'name': _row.name,
+            'url': _row.url
+          }
+          __url_data.append(_tmp_url_data)
+        _tmp_return_data['data'] = __url_data
+        _tmp_return_data['code'] = 0
+      except (TypeError, AttributeError):
+        _tmp_return_data['msg'] = '无任何权限'
       return _tmp_return_data
     else:  # 无过滤条件查询
       _query_info = limitQuery(Auth.AuthGroup, int(_page), int(_limit))
