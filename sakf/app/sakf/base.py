@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-import tornado.web, time, functools, logging
+import time
+import functools
+import logging
+import tornado.web
 from . import session
-from sakf.db.model import (sql)
+from sakf.db.model import sql
 
 
 def auth_url(method):

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # 内存session
-from sakf.db.nosql import nosql
+
 import time
+from sakf.db.nosql import nosql
 
 # 初始化NoSQL DB
 _nosql = nosql.nosqlDB()

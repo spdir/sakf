@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
 # Url
+import json
+import logging
+from sqlalchemy import and_
+import tornado.web
 from sakf.app.sakf import base
 from sakf.utils.sql_page_query import limitQuery
 from sakf.db.model import (Auth)
-import logging, json
-from sqlalchemy import and_
 
 
 class UrlHandler(base.BaseHandlers):
 
+  @base.auth_url
+  @tornado.web.authenticated
   def get(self, suburl, *args, **kwargs):
     return self.render('auth/urls.html')
 
+  @base.auth_url
+  @tornado.web.authenticated
   def post(self, suburl, *args, **kwargs):
     return_data = {}
     try:
@@ -57,8 +63,8 @@ class UrlHandler(base.BaseHandlers):
                   Auth.AuthUrl.name == _name and Auth.AuthUrl.url == _url).first():
             status = 1
           try:
-            self.__admin_add_url(_name)
-          except TimeoutError:
+            self.__admin_add_url(_name)  # 管理源添加此权限
+          except:
             pass
         else:
           status = 2
@@ -116,14 +122,14 @@ class UrlHandler(base.BaseHandlers):
     }
     _data = []
     if _url or _name:
-      if _url and not _name:
+      if _url and not _name:  # url或name模糊匹配
         filter = Auth.AuthUrl.url.like("%" + _url + "%")
       elif _name and not _url:
         filter = Auth.AuthUrl.name.like("%" + _name + "%")
       else:
         filter = and_(Auth.AuthUrl.name.like("%" + _name + "%"), Auth.AuthUrl.url.like("%" + _url + "%"))
       _query_info = limitQuery(Auth.AuthUrl, int(_page), int(_limit), is_filter=True, _filter=filter)
-    else:
+    else:  # 无过滤条件查询
       _query_info = limitQuery(Auth.AuthUrl, int(_page), int(_limit))
     return_data['count'] = _query_info.get('count', 1)
     for _n, _row in enumerate(_query_info.get('data'), 1):

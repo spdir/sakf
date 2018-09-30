@@ -2,11 +2,11 @@
 # import base64, uuid
 # base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
 
+import os
+import tornado.web
 from tornado.options import define, options, parse_config_file
 from sakf.conf import globalConfig
 from sakf.route import route
-import tornado.web
-import os
 
 _Conf = globalConfig.config
 _Base_dir = globalConfig.__baseDir__

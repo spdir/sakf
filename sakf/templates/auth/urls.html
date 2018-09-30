@@ -140,6 +140,7 @@
           edit: 'text',
           width: 460
         }, {
+          title: '操作',
           fixed: 'right',
           //width: 180,
           align: 'center',
@@ -151,7 +152,6 @@
     // table edit
     table.on('edit(url_table)', function (obj) {
       var modify_data = obj.data;
-      console.log(modify_data)
       $.ajax({
         type: 'post',
         url: '/auth/url/modify',
@@ -229,6 +229,7 @@
             edit: 'text',
             width: 460
           }, {
+            title: '操作',
             fixed: 'right',
             align: 'center',
             toolbar: '#barUrl_hash'

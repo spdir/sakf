@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from sakf.db.model.sql import sql_session
 from sqlalchemy import func
+from sakf.db.model.sql import sql_session
 
 sql_session = sql_session()
 

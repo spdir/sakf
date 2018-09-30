@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from sakf.conf import globalConfig
 import jdb2
+from sakf.conf import globalConfig
+
 
 def nosqlDB():
   """

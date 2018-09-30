@@ -1,4 +1,450 @@
 {% extends '../sakf/model.html' %}
 {% block body %}
+<body style="margin-top: 15px">
+<div class="layui-fluid">
+    <div class="layui-row">
+        <div class="layui-col-xs12">
+            <div class="layui-card">
+                <div class="layui-card-header">权限管理 / 分组管理</div>
+                <div class="layui-card-body">
+                    <div class="layui-card-header">
+                        <a href="javascript:;" class="layui-btn layui-btn-xs" id="add_hash">
+                            <i class="layui-icon">&#xe654;</i>
+                            <span>新增</span>
+                        </a>
+                        <a href="javascript:;" class="layui-btn layui-btn-xs layui-btn-primary" id="search_hash">
+                            <i class="layui-icon">&#xe615;</i>
+                        </a>
+                    </div>
+                    <div class="layui-card-body">
+                        <table id="group_hash" lay-filter="group_table"></table>
+                        <script type="text/html" id="barGroup_hash">
+                            <a class="layui-btn layui-btn-xs" lay-event="show_m">查看组成员</a>
+                            <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="add_m">添加组成员</a>
+                            <a class="layui-btn layui-btn-xs" lay-event="show_u">查看URL权限</a>
+                            <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="add_u">添加URL权限</a>
+                            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<style>
+    .layer_1 {
+        margin: 10px;
+    }
+</style>
+
+<!-- search -->
+<script type="text/html" id="search_tpl_hash">
+    <div class="layer_1">
+        <form class="layui-form layui-form-pane" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">Name</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required lay-verify="required" placeholder="请输入组名"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="groupSearch">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<!-- add -->
+<script type="text/html" id="add_tpl_hash">
+    <div class="layer_1">
+        <form class="layui-form layui-form-pane" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">组名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required lay-verify="required" placeholder="请输入组名"
+                           autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="groupAdd">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<!-- show member -->
+<script type="text/html" id="show_member_hash">
+    <div class="layer_1">
+        <table id="group_member_hash" lay-filter="group_member_table"></table>
+    </div>
+</script>
+
+<!-- show member option -->
+<script type="text/html" id="del_hash_option">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!-- show url -->
+<script type="text/html" id="show_url_hash">
+    <div class="layer_1">
+        <table id="group_url_hash" lay-filter="group_url_table"></table>
+    </div>
+</script>
+
+
+<script>
+  layui.config({
+    base: '{{ static_url("js/") }}'
+  }).use(['jquery', 'table', 'layer', 'sidebar', 'form'], function () {
+    var $ = layui.jquery,
+        layer = layui.layer,
+        table = layui.table,
+        sidebar = layui.sidebar,
+        form = layui.form;
+
+    //表格容器
+    table.render({
+      method: 'post',
+      // size: 'sm',
+      limit: 20,
+      elem: '#group_hash',
+      //height: "full-320",
+      loading: true,
+      //defaultToolbar: ['filter', 'print', 'exports'],
+      url: '/auth/group/query', //数据接口
+      page: true, //开启分页
+      cols: [
+        [ //表头
+          {
+            field: 'id',
+            title: 'ID',
+            width: 100,
+            sort: true,
+            fixed: 'left',
+          }, {
+          field: 'uid',
+          title: 'UID',
+          hide: true
+        }, {
+          field: 'name',
+          title: '名称',
+          sort: true,
+          edit: 'text',
+          width: 300
+        }, {
+          title: '操作',
+          fixed: 'right',
+          //width: 180,
+          align: 'center',
+          toolbar: '#barGroup_hash'
+        }
+        ]
+      ]
+    });
+
+    // table edit
+    table.on('edit(group_table)', function (obj) {
+      var modify_data = obj.data;
+      $.ajax({
+        type: 'post',
+        url: '/auth/group/modify',
+        data: {'tp': 'name', 'info': JSON.stringify(modify_data)}
+      });
+    });
+
+    // tools event
+    table.on('tool(group_table)', function (obj) {
+      var data = obj.data;
+      var layEvent = obj.event;
+      var tr = obj.tr;
+      //事件开始
+      if (layEvent === 'del') { //删除
+        layer.confirm("(删除后组内所有用户全部归属于guest组)" +
+            "<br>" +
+            "确认是否是删除", function (index) {
+          obj.del();
+          layer.close(index);
+          //向服务端发送删除指令
+          $.ajax({
+            type: 'post',
+            url: '/auth/group/del',
+            data: {'info': JSON.stringify(data)}
+          });
+        });
+      } else if (layEvent === 'show_m') { //查看组成员
+        layer.open({
+          type: 1,
+          title: '查看成员',
+          //area: ['390px', '230px'],
+          offset: ['100px', '185px'],
+          shade: 0.1,
+          shadeClose: true,
+          resize: false,
+          maxmin: true,
+          content: $("#show_member_hash").html()
+        });
+        table.render({
+          method: 'post',
+          // size: 'sm',
+          limit: 20,
+          where: {'tp': 'g', 'group_id': data.uid},
+          elem: '#group_member_hash',
+          //height: "full-320",
+          loading: true,
+          //defaultToolbar: ['filter', 'print', 'exports'],
+          url: '/auth/user/query', //数据接口
+          page: true, //开启分页
+          cols: [
+            [ //表头
+              {
+                field: 'id',
+                title: 'ID',
+                width: 80,
+                sort: true,
+                fixed: 'left',
+              }, {
+              field: 'uid',
+              title: 'UID',
+              hide: true
+            }, {
+              field: 'name',
+              title: '账户名',
+              sort: true,
+              width: 150
+            }, {
+              field: 'super',
+              title: '是否管理员',
+              sort: true,
+              width: 120
+            }, {
+              field: 'lock',
+              title: '是否锁定',
+              sort: true,
+              width: 120
+            }, {
+              field: 'group',
+              title: '所在组',
+              sort: true,
+              width: 140
+            }, {
+              title: '操作',
+              fixed: 'right',
+              //width: 180,
+              align: 'center',
+              toolbar: '#del_hash_option'
+            }
+            ]
+          ]
+        });
+        // del group member
+        table.on('tool(group_member_table)', function (obj) {
+          var data = obj.data;
+          var layEvent = obj.event;
+          var tr = obj.tr;
+          //事件开始
+          if (layEvent === 'del') { //删除
+            layer.confirm("(删除后用户自动归属到guest组)" +
+                "<br>" +
+                "确认是否是删除", function (index) {
+              obj.del();
+              layer.close(index);
+              //向服务端发送删除指令
+              $.ajax({
+                type: 'post',
+                url: '/auth/user/modify',
+                data: {'tp': 'group', 'info': JSON.stringify({'uid': data.uid, 'group': 2})}
+              });
+            });
+          }
+        });
+      } else if (layEvent === 'add_m') { //添加组成员
+
+      } else if (layEvent === 'show_u') { //查看url权限
+        layer.open({
+          type: 1,
+          title: '查看URL权限',
+          area: ['auto', '230px'],
+          offset: ['100px', '330px'],
+          shade: 0.1,
+          shadeClose: true,
+          resize: false,
+          maxmin: true,
+          content: $("#show_url_hash").html()
+        });
+        table.render({
+          method: 'post',
+          // size: 'sm',
+          limit: 20,
+          where: {'tp': 'url', 'group_id': data.uid},
+          elem: '#group_url_hash',
+          //height: "full-320",
+          loading: true,
+          //defaultToolbar: ['filter', 'print', 'exports'],
+          url: '/auth/group/query', //数据接口
+          page: true, //开启分页
+          cols: [
+            [ //表头
+              {
+                field: 'id',
+                title: 'ID',
+                width: 80,
+                sort: true,
+                fixed: 'left',
+              }, {
+              field: 'uid',
+              title: 'UID',
+              hide: true
+            }, {
+              field: 'name',
+              title: '名称',
+              sort: true,
+              width: 150
+            }, {
+              field: 'url',
+              title: 'URL',
+              sort: true,
+              width: 120
+            }, {
+              title: '操作',
+              fixed: 'right',
+              //width: 180,
+              align: 'center',
+              toolbar: '#del_hash_option'
+            }
+            ]
+          ]
+        });
+        //del group url
+        table.on('tool(group_url_table)', function (obj) {
+          var u_data = obj.data;
+          var layEvent = obj.event;
+          var tr = obj.tr;
+          //事件开始
+          if (layEvent === 'del') { //删除
+            layer.confirm("确认删除此权限", function (index) {
+              obj.del();
+              layer.close(index);
+              //向服务端发送删除指令
+              $.ajax({
+                type: 'post',
+                url: '/auth/group/modify',
+                data: {'tp': 'url', 'info': JSON.stringify({'uid': data.uid, 'url_id': u_data.uid})}
+              });
+            });
+          }
+        });
+      } else if (layEvent === 'add_u') { //添加url
+
+      }
+    });
+
+
+    // add
+    $("#add_hash").click(function () {
+      layer.open({
+        type: 1,
+        title: '添加组',
+        area: ['390px', '230px'],
+        shade: 0.1,
+        shadeClose: true,
+        resize: false,
+        maxmin: true,
+        content: $("#add_tpl_hash").html()
+      });
+    });
+    form.on('submit(groupAdd)', function (data) {
+      var form_data = data.field;
+      $.ajax({
+        type: 'post',
+        url: '/auth/group/add',
+        data: {'info': JSON.stringify(form_data)},
+        success: function (data) {
+          if (data.status == 1) {
+            layer.msg('添加成功', {icon: 1});
+          } else if (data.status == 2) {
+            layer.msg('已存在', {icon: 2});
+          } else {
+            layer.msg('添加失败', {icon: 2});
+          }
+        },
+        error: function () {
+          layer.msg('系统异常,请稍后重试!!!', {icon: 2});
+        }
+      })
+      return false;
+    });
+
+    // search
+    $("#search_hash").click(function () {
+      layer.open({
+        type: 1,
+        title: '搜索',
+        area: ['390px', '230px'],
+        shade: 0.1,
+        shadeClose: true,
+        resize: false,
+        maxmin: true,
+        content: $("#search_tpl_hash").html()
+      });
+    });
+    form.on('submit(groupSearch)', function (data) {
+      var form_data = data.field;
+      var name = form_data.name;
+      // 搜索表格容器
+      table.render({
+        method: 'post',
+        limit: 20,
+        elem: '#group_hash',
+        loading: true,
+        url: '/auth/group/query', //数据接口
+        where: {name: name},
+        page: true, //开启分页
+        cols: [
+          [ //表头
+            {
+              field: 'id',
+              title: 'ID',
+              width: 100,
+              sort: true,
+              fixed: 'left',
+            }, {
+            field: 'uid',
+            title: 'UID',
+            hide: true
+          }, {
+            field: 'name',
+            title: '名称',
+            sort: true,
+            edit: 'text',
+            width: 300
+          }, {
+            title: '操作',
+            fixed: 'right',
+            //width: 180,
+            align: 'center',
+            toolbar: '#barGroup_hash'
+          }
+          ]
+        ]
+      });
+      return false;
+    });
+
+  });
+</script>
+
+<style scoped>
+
+</style>
+</body>
 {% end %}

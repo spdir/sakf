@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # 登陆/登出
+import time
+import json
+import logging
 from sakf.app.sakf import base
-import time, json, logging
 from sakf.utils import md5_encryption
 from sakf.db.model import Auth
 

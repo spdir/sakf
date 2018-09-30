@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # User
+import logging
+import json
+import tornado.web
 from sakf.app.sakf import base
-import logging, json
 from sakf.db.model import Auth
 from sakf.utils.sql_page_query import limitQuery
 from sakf.utils.md5_encryption import md5_string
@@ -9,9 +11,13 @@ from sakf.utils.md5_encryption import md5_string
 
 class UserHandler(base.BaseHandlers):
 
+  @base.auth_url
+  @tornado.web.authenticated
   def get(self, suburl, *args, **kwargs):
     return self.render('auth/user.html')
 
+  @base.auth_url
+  @tornado.web.authenticated
   def post(self, suburl, *args, **kwargs):
     return_data = {}
     try:
@@ -82,7 +88,7 @@ class UserHandler(base.BaseHandlers):
     return_data = {'status': 0}
     _tp = self.get_argument('tp', None)
     _info = json.loads(self.get_argument('info', None))
-    if _tp == 'lock':
+    if _tp == 'lock':  # 锁定账号
       _id = _info.get('uid', None)
       _lock_id = self.get_argument('lock', 0)
       self.sql_engine.query(Auth.AuthUser).filter_by(id=_id).update({
@@ -90,7 +96,7 @@ class UserHandler(base.BaseHandlers):
         'ltime': self.now_time()
       })
       self.sql_engine.commit()
-    elif _tp == 'passwd':
+    elif _tp == 'passwd':  # 修改密码
       _passwd = _info.get('passwd', None)
       if _passwd:
         self.sql_engine.query(Auth.AuthUser).filter_by(id=int(_info.get('uid'))).update({
@@ -98,7 +104,7 @@ class UserHandler(base.BaseHandlers):
         })
         self.sql_engine.commit()
         return_data['status'] = 1
-    elif _tp == 'name':
+    elif _tp == 'name':  # 修改用户名
       _name = _info.get('name', None)
       if _name:
         if not self.sql_engine.query(Auth.AuthUser).filter_by(name=_name).first():
@@ -107,7 +113,7 @@ class UserHandler(base.BaseHandlers):
           })
           self.sql_engine.commit()
           return_data['status'] = 1
-    elif _tp == 'group':
+    elif _tp == 'group':  # 修改组
       _group_id = _info.get('group')
       if _group_id:
         if self.sql_engine.query(Auth.AuthGroup).filter_by(id=int(_group_id)).first():
@@ -129,6 +135,7 @@ class UserHandler(base.BaseHandlers):
     _username = self.get_argument('username', None)
     _page = self.get_argument('page', 1)
     _limit = self.get_argument('limit', 30)
+    _tp = self.get_argument('tp', None)
     return_data = {
       "code": 1,
       "msg": "ERROR",
@@ -136,10 +143,14 @@ class UserHandler(base.BaseHandlers):
       "data": []
     }
     _data = []
-    if _username:
+    if _username:  # 用户名模糊查询
       _query_info = limitQuery(Auth.AuthUser, int(_page), int(_limit), is_filter=True,
                                _filter=Auth.AuthUser.name.like("%" + _username + "%"))
-    else:
+    elif _tp == 'g':  # 根据组id查询
+      _group_id = self.get_argument('group_id', None)
+      _query_info = limitQuery(Auth.AuthUser, int(_page), int(_limit), is_filter=True,
+                               _filter=Auth.AuthUser.group_id == int(_group_id))
+    else:  # 无过滤条件查询
       _query_info = limitQuery(Auth.AuthUser, int(_page), int(_limit))
     return_data['count'] = _query_info.get('count', 1)
     for _n, _row in enumerate(_query_info.get('data'), 1):
