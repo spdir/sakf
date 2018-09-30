@@ -68,7 +68,7 @@ class LoginHandler(base.BaseHandlers):
           else:
             _lock_cookie[username] = int(_now_user_lock) + 1
             self.set_secure_cookie('_TLU_', json.dumps(_lock_cookie), expires=time.time() + 60 * 5)
-    except TabError as e:
+    except Exception as e:
       logging.error(e)
     return self.write(status_code)
 
