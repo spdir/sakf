@@ -35,6 +35,16 @@
                         <i class="layui-icon">&#xe60e;</i>
                     </a>
                 </li>
+                <li class="kit-item">
+                    <a href="javascript:;" id="NoteMain">
+                        <i class="layui-icon">&#xe66e;</i>
+                    </a>
+                </li>
+                <li class="kit-item">
+                    <a href="javascript:;" id="toggleFullScreen">
+                        <i class="iconfont">&#xe6a2;</i>
+                    </a>
+                </li>
                 <li class="kit-item" id="cc">
                     <a href="javascript:;">
                         <i class="layui-icon">&#xe64c;</i>
@@ -147,6 +157,44 @@
   layui.config({
     base: '{{ static_url("js/") }}'
   }).use('admin');
+  /* 全屏 */
+  $("#toggleFullScreen").click(function () {
+    if (!document.fullscreenElement && // alternative standard method
+        !document.mozFullScreenElement && !document.webkitFullscreenElement) {// current working methods
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.mozRequestFullScreen) {
+        document.documentElement.mozRequestFullScreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+      }
+    } else {
+      if (document.cancelFullScreen) {
+        document.cancelFullScreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitCancelFullScreen) {
+        document.webkitCancelFullScreen();
+      }
+    }
+  });
+  /* 便签 */
+  $('#NoteMain').click(function () {
+    layer.prompt({
+      formType: 2,
+      offset: ['46px', '59%'],
+      area: ['310px', '160px'],
+      scrollbar: false,
+      btn: false,
+      value: window.noteBody,
+      title: '便签',
+      shade: 0,
+      id: 'noteMain',
+      cancel: function (index, layero) {
+        window.noteBody = $("#noteMain").children().val();
+      }
+    })
+  });
 </script>
 <!-- endbuild -->
 </body>

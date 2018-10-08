@@ -13,7 +13,7 @@ _Base_dir = globalConfig.__baseDir__
 
 # define
 define(name='address', default='0.0.0.0', help='listen address')
-define(name='port', default=8080, help='listen address', type=int)
+define(name='port', default=8081, help='listen address', type=int)
 define(name='ssl', default=False, help="use ssl", type=bool)
 
 
