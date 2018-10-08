@@ -1,0 +1,52 @@
+{% extends 'model.html' %}
+{% block body %}
+<body style="margin-top: 15px">
+<div class="layui-fluid">
+    <div class="layui-row">
+        <div class="layui-col-xs12">
+            <div class="layui-card">
+                <div class="layui-card-header">TEST</div>
+                <div class="layui-card-body">
+                    <div class="layer_1">
+                        <form class="layui-form" action="" method="post">
+                            <select name="url_list" xm-select="select_url_user" xm-select-search=""
+                                    xm-select-search-type="dl">
+                                <option value="">请选择将要添加的URL</option>
+                            </select>
+                            <div class="layui-form-item" style="margin-top: 5px;">
+                                <button class="layui-btn" lay-submit lay-filter="add_Url">确认添加</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+  layui.config({
+    base: '{{ static_url("js/") }}'
+  }).use(['jquery', 'table', 'layer', 'sidebar', 'form', 'formSelects'], function () {
+    var $ = layui.jquery,
+        layer = layui.layer,
+        table = layui.table,
+        sidebar = layui.sidebar,
+        form = layui.form,
+        formSelects = layui.formSelects;
+
+    formSelects.data('select_url_user', 'server', {
+      type: 'post',
+      //url: 'http://yapi.demo.qunar.com/mock/9813/layui/data',
+      url: '/auth/group/query',
+      data: {'tp': 'all_url'}
+    });
+  });
+</script>
+
+<style scoped>
+
+</style>
+</body>
+{% end %}

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href='{{ static_url("lib/layui/css/layui.css") }}'>
     <link rel="stylesheet" href='{{ static_url("css/theme/default.css") }}' id="theme">
     <link rel="stylesheet" href='{{ static_url("css/nprogress.css") }}'>
+    <link rel="stylesheet" href='{{ static_url("css/formSelects.css") }}'>
     <!-- endbuild -->
     <!-- build:js -->
     <script src='{{ static_url("lib/polyfill.min.js") }}'></script>
@@ -16,7 +17,7 @@
     <script src='{{ static_url("js/utils/tools.js") }}'></script>
     <script src='{{ static_url("lib/jquery-3.3.1.min.js") }}'></script>
     <!-- endbuild -->
-    <script src="https://cdn.bootcss.com/echarts/4.1.0.rc2/echarts.min.js"></script>
+    <script src='{{ static_url("lib/echarts.min.js") }}'></script>
     <!-- build:use -->
     {% block head %} {% end %}
 </head>

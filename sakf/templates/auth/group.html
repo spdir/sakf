@@ -38,7 +38,7 @@
     }
 </style>
 
-<!-- search -->
+<!-- search group -->
 <script type="text/html" id="search_tpl_hash">
     <div class="layer_1">
         <form class="layui-form layui-form-pane" action="">
@@ -60,7 +60,7 @@
     </div>
 </script>
 
-<!-- add -->
+<!-- add group -->
 <script type="text/html" id="add_tpl_hash">
     <div class="layer_1">
         <form class="layui-form layui-form-pane" action="">
@@ -82,7 +82,7 @@
     </div>
 </script>
 
-<!-- show member -->
+<!-- show group member -->
 <script type="text/html" id="show_member_hash">
     <div class="layer_1">
         <table id="group_member_hash" lay-filter="group_member_table"></table>
@@ -101,16 +101,45 @@
     </div>
 </script>
 
+<!-- add user -->
+<script type="text/html" id="add_user_hash">
+    <div class="layer_1">
+        <form class="layui-form" action="" method="post">
+            <select name="user_list" xm-select="select_add_user" xm-select-search="" xm-select-search-type="dl">
+                <option value="">请选择将要添加的用户</option>
+            </select>
+            <div class="layui-form-item" style="margin-top: 5px;">
+                <button class="layui-btn" lay-submit lay-filter="add_User">确认添加</button>
+            </div>
+        </form>
+    </div>
+</script>
+
+<!-- add url -->
+<script type="text/html" id="add_url_hash">
+    <div class="layer_1">
+        <form class="layui-form" action="" method="post">
+            <select name="url_list" xm-select="select_add_url" xm-select-search="" xm-select-search-type="dl">
+                <option value="">请选择将要添加的URL</option>
+            </select>
+            <div class="layui-form-item" style="margin-top: 5px;">
+                <button class="layui-btn" lay-submit lay-filter="add_Url">确认添加</button>
+            </div>
+        </form>
+    </div>
+</script>
+
 
 <script>
   layui.config({
     base: '{{ static_url("js/") }}'
-  }).use(['jquery', 'table', 'layer', 'sidebar', 'form'], function () {
+  }).use(['jquery', 'table', 'layer', 'sidebar', 'form', 'formSelects'], function () {
     var $ = layui.jquery,
         layer = layui.layer,
         table = layui.table,
         sidebar = layui.sidebar,
-        form = layui.form;
+        form = layui.form,
+        formSelects = layui.formSelects;
 
     //表格容器
     table.render({
@@ -268,8 +297,44 @@
           }
         });
       } else if (layEvent === 'add_m') { //添加组成员
-
-      } else if (layEvent === 'show_u') { //查看url权限
+        layer.open({
+          type: 1,
+          title: '添加组成员',
+          area: ['390px', '360px'],
+          //offset: ['100px', '185px'],
+          shade: 0.1,
+          shadeClose: true,
+          resize: false,
+          maxmin: true,
+          content: $("#add_user_hash").html()
+        });
+        formSelects.data('select_add_user', 'server', {
+          type: 'post',
+          url: '/auth/group/query',
+          data: {'tp': 'all_user'}
+        });
+        formSelects.render('select_add_user');
+        form.on('submit(add_User)', function (user_data) {
+          console.log(user_data.field);
+          var user_list = user_data.field.user_list;
+          $.ajax({
+            type: 'post',
+            url: '/auth/group/modify',
+            data: {'tp': 'add_user', info: JSON.stringify({'user_list': user_list, 'group_id': data.uid})},
+            success: function (r_data) {
+              if (r_data.status == 1) {
+                layer.msg('添加成功', {icon: 1});
+              } else {
+                layer.msg('添加失败', {icon: 2});
+              }
+            },
+            error: function () {
+              layer.msg('系统异常', {icon: 2});
+            }
+          });
+          return false;
+        });
+      } else if (layEvent === 'show_u') {  //查看url权限
         layer.open({
           type: 1,
           title: '查看URL权限',
@@ -343,11 +408,46 @@
             });
           }
         });
-      } else if (layEvent === 'add_u') { //添加url
-
+      } else if (layEvent === 'add_u') {  //添加url
+        layer.open({
+          type: 1,
+          title: '添加URL权限',
+          area: ['390px', '360px'],
+          //offset: ['100px', '185px'],
+          shade: 0.1,
+          shadeClose: true,
+          resize: true,
+          maxmin: true,
+          content: $("#add_url_hash").html()
+        });
+        formSelects.render('select_add_url');
+        formSelects.data('select_add_url', 'server', {
+          type: 'post',
+          url: '/auth/group/query',
+          data: {'tp': 'all_url'}
+        });
+        form.on('submit(add_Url)', function (url_data) {
+          console.log(url_data.field);
+          var url_list = url_data.field.url_list;
+          $.ajax({
+            type: 'post',
+            url: '/auth/group/modify',
+            data: {'tp': 'add_url', info: JSON.stringify({'url_list': url_list, 'group_id': data.uid})},
+            success: function (r_data) {
+              if (r_data.status == 1) {
+                layer.msg('添加成功', {icon: 1});
+              } else {
+                layer.msg('添加失败', {icon: 2});
+              }
+            },
+            error: function () {
+              layer.msg('系统异常', {icon: 2});
+            }
+          });
+          return false;
+        });
       }
     });
-
 
     // add
     $("#add_hash").click(function () {

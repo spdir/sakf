@@ -1,5 +1,5 @@
 var mods = [
-  'element', 'sidebar', 'select', 'table',
+  'element', 'sidebar', 'select', 'table', 'formSelects',
   'tabs', 'menu', 'route', 'utils', 'component', 'kit'
 ];
 
@@ -13,6 +13,7 @@ layui.define(mods, function (exports) {
       layer = layui.layer,
       menu = layui.menu,
       component = layui.component,
+      formSelects = layui.formSelects,
       table = layui.table,
       kit = layui.kit;
 
@@ -147,27 +148,33 @@ layui.define(mods, function (exports) {
             name: '编辑用户',
           }]
         }],
-        routes: [{
-          path: '/',
-          component: '/home',
-          name: '主页',
-          iframe: true
-        }, {
-          path: '/auth/user',
-          component: '/auth/user',
-          name: '用户管理',
-          iframe: true
-        }, {
-          path: '/auth/group',
-          component: '/auth/group',
-          name: '分组管理',
-          iframe: true
-        }, {
-          path: '/auth/url',
-          component: '/auth/url',
-          name: '链接管理',
-          iframe: true
-        }]
+        routes: [
+          {
+            path: '/test',
+            component: '/test',
+            name: '测试',
+            iframe: true
+          }, {
+            path: '/',
+            component: '/home',
+            name: '主页',
+            iframe: true
+          }, {
+            path: '/auth/user',
+            component: '/auth/user',
+            name: '用户管理',
+            iframe: true
+          }, {
+            path: '/auth/group',
+            component: '/auth/group',
+            name: '分组管理',
+            iframe: true
+          }, {
+            path: '/auth/url',
+            component: '/auth/url',
+            name: '链接管理',
+            iframe: true
+          }]
       };
       if (config.loadType === 'TABS') {
         routeOpts.onChanged = function () {

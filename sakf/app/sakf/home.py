@@ -36,3 +36,8 @@ class HomeSettingHandler(base.BaseHandlers):
 
   def post(self, *args, **kwargs):
     self.get()
+
+class TestHandler(base.BaseHandlers):
+  def get(self, *args, **kwargs):
+    self.render('sakf/test.html')
+

@@ -25,7 +25,7 @@ class GroupHandler(base.BaseHandlers):
         return_data = func(self, args, kwargs)
       else:
         return self.render('auth/group.html')
-    except Exception as e:
+    except TimeoutError as e:
       logging.error(e)
     return self.write(return_data)
 
@@ -89,13 +89,35 @@ class GroupHandler(base.BaseHandlers):
       _url_id = _info.get('url_id')
       if _group_id:
         _group_obj = self.sql_engine.query(Auth.AuthGroup).filter_by(id=int(_group_id))
-        _old_route = _group_obj.first().url_route
-        _url_id_list = [i for i in _old_route.split(',') if i]
+        _url_id_list = [i for i in _group_obj.first().url_route.split(',') if i]
         _url_id_list.remove(str(_url_id))
         _group_obj.update({
           'url_route': ','.join(_url_id_list)
         })
         self.sql_engine.commit()
+    elif _tp == 'add_user':  # 向指定组添加用户
+      group_id = _info.get('group_id', None)
+      user_list = _info.get('user_list', None)
+      if user_list and group_id:
+        user_list, group_id = [int(i) for i in user_list.split(',')], int(group_id)
+        if self.sql_engine.query(Auth.AuthGroup).filter_by(id=group_id).first():
+          for u_id in user_list:
+            self.sql_engine.query(Auth.AuthUser).filter_by(id=u_id).update({'group_id': group_id})
+            self.sql_engine.commit()
+        return_data['status'] = 1
+    elif _tp == 'add_url':  # 向指定组添加url权限
+      group_id = _info.get('group_id', None)
+      url_list = _info.get('url_list', None)
+      if group_id and url_list:
+        url_list, group_id = [i for i in url_list.split(',')], int(group_id)
+        group_obj = self.sql_engine.query(Auth.AuthGroup).filter_by(id=group_id)
+        if group_obj.first():
+          old_group_url = [i for i in group_obj.first().url_route.split(',') if i]
+          old_group_url.extend(url_list)
+          new_group_url = ','.join(list(set(old_group_url)))
+          group_obj.update({'url_route': new_group_url})
+          self.sql_engine.commit()
+          return_data['status'] = 1
     return return_data
 
   def _query(self, *args, **kwargs):
@@ -144,6 +166,40 @@ class GroupHandler(base.BaseHandlers):
         _tmp_return_data['code'] = 0
       except (TypeError, AttributeError):
         _tmp_return_data['msg'] = '无任何权限'
+      return _tmp_return_data
+    elif _tp == 'all_user':  # 获取所有的用户列表和ID
+      _tmp_return_data = {
+        'code': 0,
+        'msg': "success",
+        'data': []
+      }
+      _tmp_data = []
+      _query_data = self.sql_engine.query(Auth.AuthUser).all()
+      for row in _query_data:
+        _tmp_data.append({
+          'name': row.name,
+          'value': row.id,
+          'selected': "",
+          "disabled": ""
+        })
+      _tmp_return_data['data'] = _tmp_data
+      return _tmp_return_data
+    elif _tp == 'all_url':  # 获取所有的url列表和ID
+      _tmp_return_data = {
+        'code': 0,
+        'msg': "success",
+        'data': []
+      }
+      _tmp_data = []
+      _query_data = self.sql_engine.query(Auth.AuthUrl).all()
+      for row in _query_data:
+        _tmp_data.append({
+          'name': row.name,
+          'value': row.id,
+          'selected': "",
+          "disabled": ""
+        })
+      _tmp_return_data['data'] = _tmp_data
       return _tmp_return_data
     else:  # 无过滤条件查询
       _query_info = limitQuery(Auth.AuthGroup, int(_page), int(_limit))

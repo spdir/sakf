@@ -12,12 +12,13 @@ if (layui === undefined) {
     route: 'kit_modules/route',
     tabs: 'kit_modules/tabs',
     utils: 'kit_modules/utils',
-    component:'kit_modules/component',
-    nprogress:'kit_modules/nprogress',
-    kit:'kit_modules/kit',
-    sidebar:'kit_modules/sidebar',
-    select:'kit_modules/select',
-    echarts:'kit_modules/echarts'
+    component: 'kit_modules/component',
+    nprogress: 'kit_modules/nprogress',
+    kit: 'kit_modules/kit',
+    formSelects: 'kit_modules/formSelects',
+    sidebar: 'kit_modules/sidebar',
+    select: 'kit_modules/select',
+    echarts: 'kit_modules/echarts'
   };
 
   layui.injectModules(modules);

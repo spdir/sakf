@@ -3,7 +3,7 @@
 from tornado.options import options
 from sakf.conf import serverConfig
 # ------------- start handler -------------#
-from sakf.app.sakf import home
+from sakf.app.sakf import home, test
 from sakf.app.auth import (auth, user, group, url)
 
 
@@ -25,7 +25,8 @@ class AppRoute(object):
       (r'/', home.IndexHandler),
       (r'/home', home.HomeHandler),
       (r'/setting/?', home.HomeSettingHandler),
-
+      (r'/test/?', home.TestHandler),
+      (r'/test1/?', test.Test1Handler),
     ]
     return sakf_route
 
