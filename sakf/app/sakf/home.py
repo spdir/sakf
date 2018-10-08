@@ -10,7 +10,7 @@ class IndexHandler(base.BaseHandlers):
   @tornado.web.authenticated
   @base.auth_url
   def get(self):
-    return self.render('sakf/index.html')
+    return self.render('sakf/index.html', username=self.session['username'])
 
   def post(self):
     self.get()
@@ -37,7 +37,7 @@ class HomeSettingHandler(base.BaseHandlers):
   def post(self, *args, **kwargs):
     self.get()
 
+
 class TestHandler(base.BaseHandlers):
   def get(self, *args, **kwargs):
     self.render('sakf/test.html')
-

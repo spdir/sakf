@@ -20,6 +20,7 @@ config = {
     'port': '3306',
     'user': 'root',
     'password': '123.com',
+    # 'db_name': 'sakf-demo',
     'db_name': 'sakf-test',
     'pool_size': 100,
     'logs': False

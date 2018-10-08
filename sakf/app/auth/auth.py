@@ -37,7 +37,7 @@ class LoginHandler(base.BaseHandlers):
     status_code = {
       'status': 0,
       'msg': '账号或密码有误',
-      'next_url': next_url
+      'next_url': next_url,
     }
     try:
       if username and password:
@@ -53,6 +53,7 @@ class LoginHandler(base.BaseHandlers):
           self.session['is_super'] = True if int(db_user_info.super) else False
           try:
             self.session['url'] = self.get_user_url(db_user_info.group_id)
+            self.session['username'] = username
             status_code['status'] = 1
           except AttributeError:
             status_code['msg'] = '账号无任何权限'
