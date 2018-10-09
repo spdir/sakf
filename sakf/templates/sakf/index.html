@@ -12,7 +12,25 @@
                 <a href="#/"><span style="margin-left: 13%;">SAKF</span></a>
             </div>
         </div>
+        <style>
+            .layui-layout-left .layui-nav .layui-nav-child dd.layui-this a, .layui-nav-child dd.layui-this {
+                background-color: #fff !important;
+                color: black;
+            }
+        </style>
         <div class="layui-layout-left">
+            <ul class="layui-nav" lay-filter="">
+                <li class="layui-nav-item">
+                    <a href="javascript:;"><i class="iconfont">&#xe603;&nbsp;</i>工具</a>
+                    <dl class="layui-nav-child"> <!-- 二级菜单 -->
+                        <dd>
+                            <a onclick="show_iframe_windows('WebSSH', 'http://www.baidu.com')" href="javascript:;">
+                                <i class="iconfont">&#xe622;&nbsp;</i>SSH
+                            </a>
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
             <!-- <div class="kit-search">
                 <form action="/">
                     <input type="text" name="keyword" class="kit-search-input" placeholder="关键字..."/>
@@ -36,12 +54,12 @@
                     </a>
                 </li>
                 <li class="kit-item">
-                    <a href="javascript:;" id="NoteMain">
+                    <a href="javascript:;" id="NoteMain" title="便签">
                         <i class="layui-icon">&#xe66e;</i>
                     </a>
                 </li>
                 <li class="kit-item">
-                    <a href="javascript:;" id="toggleFullScreen">
+                    <a href="javascript:;" id="toggleFullScreen" title="全屏">
                         <i class="iconfont">&#xe6a2;</i>
                     </a>
                 </li>
@@ -135,8 +153,6 @@
                             </li>
                         </ul>
                     </li>
-
-
                 </ul>
             </div>
         </div>
