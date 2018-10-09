@@ -54,6 +54,8 @@ class LoginHandler(base.BaseHandlers):
           try:
             self.session['url'] = self.get_user_url(db_user_info.group_id)
             self.session['username'] = username
+            if not self.session['url']:
+              raise AttributeError
             status_code['status'] = 1
           except AttributeError:
             status_code['msg'] = '账号无任何权限'

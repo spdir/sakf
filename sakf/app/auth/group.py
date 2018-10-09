@@ -112,7 +112,10 @@ class GroupHandler(base.BaseHandlers):
         url_list, group_id = [i for i in url_list.split(',')], int(group_id)
         group_obj = self.sql_engine.query(Auth.AuthGroup).filter_by(id=group_id)
         if group_obj.first():
-          old_group_url = [i for i in group_obj.first().url_route.split(',') if i]
+          try:
+            old_group_url = [i for i in group_obj.first().url_route.split(',') if i]
+          except AttributeError:
+            old_group_url = []
           old_group_url.extend(url_list)
           new_group_url = ','.join(list(set(old_group_url)))
           group_obj.update({'url_route': new_group_url})
