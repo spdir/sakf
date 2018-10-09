@@ -1,13 +1,7 @@
 {% extends "../sakf/model.html" %}
 {% block head %}
-<link rel="stylesheet" href='{{ static_url("lib/layui/css/layui.css") }}'>
-<link href="{{ static_url('css/webssh/xterm.min.css') }}" rel="stylesheet" type="text/css"/>
-<link href="{{ static_url('css/webssh/fullscreen.min.css') }}" rel="stylesheet" type="text/css"/>
-
-<script src="{{ static_url('js/webssh/popper.min.js') }}"></script>
-<script src="{{ static_url('js/webssh/xterm.min.js') }}"></script>
-<script src="{{ static_url('js/webssh/fullscreen.min.js') }}"></script>
-<script src="{{ static_url('js/webssh/wenssh.js') }}"></script>
+<link href="{{ static_url('lib/webssh/xterm.min.css') }}" rel="stylesheet" type="text/css"/>
+<link href="{{ static_url('lib/webssh/fullscreen.min.css') }}" rel="stylesheet" type="text/css"/>
 <style>
     .row {
         margin-top: 20px;
@@ -24,7 +18,6 @@
 </style>
 {% end %}
 {% block body %}
-<body>
 <body>
 <style type="text/css">
     terminal xterm-rows div, span {
@@ -106,6 +99,7 @@
                        autocomplete="off" class="layui-input" required value="">
             </div>
         </div>
+        <!--
         <div class="layui-form-item" pane>
             <label class="layui-form-label">登陆方式</label>
             <div class="layui-input-block" id="login-mian">
@@ -128,13 +122,14 @@
                        style="height: 28px;border:0 solid #f1f1f1; margin-left: 15px;margin-top: 0.9%;"/>
             </div>
         </div>
+        -->
         <div class="layui-form-item" id="login-b">
             <label class="layui-form-label" for="password">
                 <span class="x-red">*</span>密码
             </label>
             <div class="layui-input-inline ">
                 <input type="password" name="password" id="password" required lay-verify="required" placeholder="请输入密码"
-                       autocomplete="off" class="layui-input" style="width: 460px;">
+                       autocomplete="off" class="layui-input" style="width: 402.8px;">
             </div>
         </div>
         {% module xsrf_form_html() %}
@@ -153,12 +148,19 @@
             <div id="terminal"></div>
         </div>
     </div>
+
+    <script src="{{ static_url('lib/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ static_url('lib/webssh/popper.min.js') }}"></script>
+    <script src="{{ static_url('lib/webssh/xterm.min.js') }}"></script>
+    <script src="{{ static_url('lib/webssh/fullscreen.min.js') }}"></script>
+    <script src="{{ static_url('js/webssh/wenssh.js') }}"></script>
 </div>
 <script type="text/javascript">
   $(document).ready(function () {
     $("#connect")[0].reset();
-    $("#login-b").css('display', 'none');
+    //$("#login-b").css('display', 'none');
   });
+  /*
   $("#login-mian").click(function () {
     var check_val = $("input[name=loginMain]:checked").val()
     if (check_val == 0) {
@@ -169,6 +171,7 @@
       $("#login-b").css('display', '');
     }
   });
+  */
 </script>
 </body>
 {% end %}

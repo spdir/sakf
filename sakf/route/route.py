@@ -2,13 +2,14 @@
 # app route
 from tornado.options import options
 from sakf.conf import serverConfig
+from sakf import sakf
 # ------------- start handler -------------#
 from sakf.app.sakf import home, test
 from sakf.app.auth import (auth, user, group, url)
+from sakf.app.webssh import webssh
 
 
 # ------------- end handler -------------#
-
 
 class AppRoute(object):
   """
@@ -41,6 +42,22 @@ class AppRoute(object):
     ]
     return auth_route
 
+  @classmethod
+  def __webssh__(self, loop, options):
+    """
+    webssh APP路由
+    :return: list
+    """
+    host_keys_settings = serverConfig.get_host_keys_settings(options)
+    policy = serverConfig.get_policy_setting(options, host_keys_settings)
+
+    ssh_route = [
+      (r'/ssh', webssh.WebsshHandler, dict(loop=loop, policy=policy,
+                                           host_keys_settings=host_keys_settings)),
+      (r'/ssh/ws', webssh.WsockHandler, dict(loop=loop))
+    ]
+    return ssh_route
+
   def route(self):
     """
     返回所有app路由
@@ -49,7 +66,8 @@ class AppRoute(object):
     app_route = []
     app_container = (
       self.__sakf__(),
-      self.__auth__()
+      self.__auth__(),
+      self.__webssh__(sakf.ioloop, options)
     )
     for app in app_container:
       if len(app[0]) == 0:

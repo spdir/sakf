@@ -59,4 +59,7 @@ class BaseHandlers(tornado.web.RequestHandler):
       return self.render('sakf/error.html', msg=":>500 抱歉，服务器出错了.")
 
   def on_finish(self):
-    self.sql_engine.close()
+    try:
+      self.sql_engine.close()
+    except AttributeError:
+      pass

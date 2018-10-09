@@ -1,1 +1,1 @@
-{"session": {"b8e56083811b682c5c5856a4b9a598d1": {"is_login": true, "is_super": true, "url": ["/", "/home", "/setting", "/auth/group", "/auth/group/add", "/auth/group/del", "/auth/group/modify", "/auth/group/query", "/auth/url", "/auth/url/add", "/auth/url/del", "/auth/url/modify", "/auth/url/query", "/auth/user", "/auth/user/add", "/auth/user/del", "/auth/user/modify", "/auth/user/query", "/test123123"], "username": "admin"}}}
+{"session": {}}
